@@ -3,6 +3,7 @@
 > 本文件由维护本 skill 时按需读取，**不在运行时加载**。
 >
 > 加载时机：
+>
 > - 修改本 skill 之前（看维护说明与最近变更）
 
 ---
@@ -12,19 +13,26 @@
 - **维护者**：方案专家 skill 作者
 - **向后兼容**：`description` 与 frontmatter 不轻易变动；章节编号稳定
 
-## 2. 修改本 skill 的工作流
+## 2. 修改本 skill 的工作流（硬性 4 件事，与 SKILL.md §🔴 一字不差）
 
-1. 读本文件，看「修订记录」确认当前版本
-2. 读主 `SKILL.md`，定位要改的章节
-3. 必要时读 `references/review-template.md` / `references/optimize-rules.md`（涉及 Step 4.2 / 4.3 时）
-4. 改完后根据需要单处落盘、双处落盘，默认单处落盘到工作副本：
-   - 工作副本：`drafts/solution-expert/`
-   - 部署副本：`.claude/skills/drafts/solution-expert/`
-5. 在下方「修订记录」追加一行（**末位 +1**）
-6. 同步更新所有版本号出现位置：
+> 🔴 **本节是硬约束**，凌驾于 SKILL.md 其他规则之上。任何修改少一件事都视为修改未完成，skill-iter 会拦截。
+
+**4 件事**：
+
+1. **先 `Read` 本文件 + `SKILL.md`** —— 看 §4 修订记录确认当前版本号，定位要改的章节
+2. **改完后追加一行**到下方「修订记录」（版本号末位 +1 + 一句话累计变更）—— **漏掉此步 = 修改未完成**
+3. **同步更新所有版本号出现位置**（3 处必须保持一致）：
    - `frontmatter.metadata.version`
-   - `frontmatter.metadata.last_updated`
+   - `frontmatter.metadata.last_updated`（当天日期）
    - 正文启动确认行（`🎯 [solution-expert vX.Y.Z] ...`）
+4. **双处落盘 + diff 校验一致**：
+   - 工作副本：`drafts/solution-expert/SKILL.md`
+   - 部署副本：`.claude/skills/drafts/solution-expert/SKILL.md`
+   - 校验：`diff drafts/solution-expert/SKILL.md .claude/skills/drafts/solution-expert/SKILL.md && echo "OK: 两处一致"`
+
+涉及 Step 4.2 / 4.3 时，按需读 `references/review-template.md` / `references/optimize-rules.md`。
+
+> 📎 详见 SKILL.md 顶部"🔴 修改本 skill 的硬性约定"节，那里是给修改者的醒目提示，本节是其完整说明。
 
 ## 3. 何时拆 references/
 
@@ -37,17 +45,17 @@
 现有 references/：
 
 | 文件 | 触发场景 |
-|------|---------|
+| ---- | -------- |
 | `review-template.md` | 仅 Step 4.2（审核 subagent）触发 |
 | `optimize-rules.md` | 仅 Step 4.3（优化 subagent）触发 |
 | `maintenance.md`（本文件） | 仅修改本 skill 时读取，运行时永不加载 |
 
 ## 4. 修订记录
 
-> **末位 +1** 是默认递增策略。跨过大版本（如 `0.3.99 → 0.4.0`）需先讨论。
+> **末位 +1** 是默认递增策略。漏记 = 修改未完成，skill-iter 会拦截。跨过大版本（如 `0.3.99 → 0.4.0`）需先讨论。
 
 | 版本 | 累计变更 |
-|------|---------|
+| ---- | -------- |
 | 0.3.0 | 单场景 skill |
 | 0.3.1 | 结构重组 + 21 项变更（角色、NFR、可观测性、DoD 等） |
 | 0.3.2 | description 精简 + ADR 模板 + 5 场景骨架 + 评审触发条件 |
@@ -62,3 +70,5 @@
 | 0.3.11 | 三阶段流水线（草稿→审核→优化）+ 审核助手 + 优化助手 + `.scheme/temp/` 目录 |
 | 0.3.12 | 拆出 references/（review-template.md + optimize-rules.md），SKILL.md 主流程瘦身，按需 Read |
 | 0.3.13 | 把维护说明 + 修订记录抽到 references/maintenance.md，运行时不加载，按需 Read |
+| 0.3.14 | 硬性约定升级：修改本 skill 必须同步追加 references/maintenance.md §4 修订记录 + 同步三处版本号 + 双处落盘（漏一条视为修改未完成） |
+| 0.3.15 | 文本矛盾消除 + 跨文档引用对齐：deploy_path 统一为 `.claude/skills/drafts/solution-expert/SKILL.md`；maintenance.md §2 "6 步" → "4 件事"与 SKILL.md §🔴 对齐；§文件结构 加 .scheme/ 说明；yymmdd 示例 10722→0722；§边界条件/§不同场景/§Code Review Checklist 三处加交叉引用；§完成检查清单 重命名为"作者自检视图"显式指向 §Code Review Checklist |
