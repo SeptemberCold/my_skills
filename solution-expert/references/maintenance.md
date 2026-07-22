@@ -13,6 +13,7 @@
 - **维护者**：方案专家 skill 作者
 - **向后兼容**：`description` 与 frontmatter 不轻易变动；章节编号稳定
 - **references/ 演进条款**：`references/` 下的 `review-template.md` / `optimize-rules.md` / `maintenance.md` 与 SKILL.md **共用同一版本号**（v0.3.X 递增）。修改上述任一文件**必走** §🔴 硬性约定 4 件事（bump 版本号 + 追加 §4 修订记录 + 同步三处版本号 + 双处落盘）。**触发边界**：任何**非纯空白/换行**修改必触发；纯格式调整（末尾换行 / 标点修正）可不 bump 但要在 §4 修订记录 标注一行说明
+- **编辑源原则**：`solution-expert/` 是唯一编辑源；`.claude/skills/solution-expert/` 仅接收本轮清单文件的对应同步，禁止独立编辑或无清单整树覆盖
 
 ## 2. 修改本 skill 的工作流（硬性 4 件事，与 SKILL.md §🔴 一字不差）
 
@@ -26,10 +27,12 @@
    - `frontmatter.metadata.version`
    - `frontmatter.metadata.last_updated`（当天日期）
    - 正文启动确认行（`🎯 [solution-expert vX.Y.Z] ...`）
-4. **双处落盘 + diff 校验一致**：
-   - 工作副本：`drafts/solution-expert/SKILL.md`
-   - 部署副本：`.claude/skills/drafts/solution-expert/SKILL.md`
-   - 校验：`diff drafts/solution-expert/SKILL.md .claude/skills/drafts/solution-expert/SKILL.md && echo "OK: 两处一致"`
+4. **双处落盘 + 逐文件 diff 校验一致**：
+   - 工作副本根目录：`solution-expert/`
+   - 部署副本根目录：`.claude/skills/solution-expert/`
+   - 实施前登记本轮修改文件相对路径清单；`SKILL.md` 因版本递增始终在清单内
+   - 对每个 `<rel>` 同步 `solution-expert/<rel>` → `.claude/skills/solution-expert/<rel>`，随后逐文件执行 `diff`
+   - 任一文件缺失或 diff 非空，整轮修改视为未完成；禁止无清单整树覆盖
 
 涉及 Step 4.2 / 4.3 时，按需读 `references/review-template.md` / `references/optimize-rules.md`。
 
@@ -75,3 +78,13 @@
 | 0.3.14 | 硬性约定升级：修改本 skill 必须同步追加 references/maintenance.md §4 修订记录 + 同步三处版本号 + 双处落盘（漏一条视为修改未完成） |
 | 0.3.15 | 文本矛盾消除 + 跨文档引用对齐：deploy_path 统一为 `.claude/skills/drafts/solution-expert/SKILL.md`；maintenance.md §2 "6 步" → "4 件事"与 SKILL.md §🔴 对齐；§文件结构 加 .scheme/ 说明；yymmdd 示例 10722→0722；§边界条件/§不同场景/§Code Review Checklist 三处加交叉引用；§完成检查清单 重命名为"作者自检视图"显式指向 §Code Review Checklist |
 | 0.3.16 | references/ 演进条款 + Step 4 流水线补全 + 文档输出规则细化 + 跨 skill 协作补 skill-iter + 边界条件评审模式显式：SKILL.md §🔴 第 1 条扩展 references/*.md 必走 4 件事；§Step 4 加草稿 300 行提示 / subagent 超时阈值 / 草稿大改 30% 回退 / temp 30 天清理（不引入 cron）；§文档输出规则 增并发 `-N` 中段命名 / archive 不带 `-N` / 复盘文档位置示例；§跨 skill 协作 首行加 skill-iter；§边界条件 评审模式显式（避免被误归入"不适用场景"）；maintenance.md §1 + §3 同步 references/ 演进条款 |
+| 0.3.17 | 统一草稿大改阈值为 30%；补充 subagent 超时注入、失败重试语义，以及用户中断和轮次命名冲突兜底；校正工作副本与部署副本路径说明 |
+| 0.3.18 | 双副本同步契约闭环：修正维护工作流实际路径；建立本轮修改文件清单、相对路径同步与逐文件 diff 的原子完成规则 |
+| 0.3.19 | 调研证据与未知项闸门：关键结论三态台账、阻塞项三种关闭方式、六维按缺口提问及对应反模式/自检 |
+| 0.3.20 | 入口分流与流程裁剪一致性：统一完整/精简/评审/退出路径、优先级、升级条件、路由记录，并对齐 ack、质量门与模板 |
+| 0.3.21 | 备选方案质量闸门：统一比较口径、硬约束可行性状态、淘汰证据、现状基线与唯一可行例外，消除稻草人选型 |
+| 0.3.22 | 风险归属与触发-响应-回滚时效映射：风险表与回滚步骤每条补 owner，触发条件补响应时间窗（P0=5min / P1=30min / P2=4h），告警归属与风险表闭环 |
+| 0.3.23 | 引用新鲜度与证据时间锚：行号引用配套 commit SHA / 日期 / 版本号，调研台账新增时间锚列，漂移回 Step 1 重取证 |
+| 0.3.24 | 安全威胁建模与数据分类触发闸门：Step 1 四档分类表，命中敏感/受监管时强制威胁建模表与 security-review 联动 |
+| 0.3.25 | 需求-变更-测试-指标-回滚可追溯矩阵：Step 2 R-N 编号化、§3.1/§6 标注 R-N、§8 强制可追溯矩阵，禁止孤立需求 |
+| 0.3.26 | 状态生命周期、上线就绪检查与最终一致性闸门：方案六态管理、变更日志与重审强制、实施前 8 项必勾与 100% 闭合闸门、终稿跨章节一致性核对 |
