@@ -12,6 +12,7 @@
 
 - **维护者**：方案专家 skill 作者
 - **向后兼容**：`description` 与 frontmatter 不轻易变动；章节编号稳定
+- **references/ 演进条款**：`references/` 下的 `review-template.md` / `optimize-rules.md` / `maintenance.md` 与 SKILL.md **共用同一版本号**（v0.3.X 递增）。修改上述任一文件**必走** §🔴 硬性约定 4 件事（bump 版本号 + 追加 §4 修订记录 + 同步三处版本号 + 双处落盘）。**触发边界**：任何**非纯空白/换行**修改必触发；纯格式调整（末尾换行 / 标点修正）可不 bump 但要在 §4 修订记录 标注一行说明
 
 ## 2. 修改本 skill 的工作流（硬性 4 件事，与 SKILL.md §🔴 一字不差）
 
@@ -49,6 +50,7 @@
 | `review-template.md` | 仅 Step 4.2（审核 subagent）触发 |
 | `optimize-rules.md` | 仅 Step 4.3（优化 subagent）触发 |
 | `maintenance.md`（本文件） | 仅修改本 skill 时读取，运行时永不加载 |
+| **演进条款** | **上述 3 个文件被修改时，均触发 §🔴 硬性约定 4 件事（详见 §1 维护说明 + SKILL.md §🔴 第 1 条）** |
 
 ## 4. 修订记录
 
@@ -72,3 +74,4 @@
 | 0.3.13 | 把维护说明 + 修订记录抽到 references/maintenance.md，运行时不加载，按需 Read |
 | 0.3.14 | 硬性约定升级：修改本 skill 必须同步追加 references/maintenance.md §4 修订记录 + 同步三处版本号 + 双处落盘（漏一条视为修改未完成） |
 | 0.3.15 | 文本矛盾消除 + 跨文档引用对齐：deploy_path 统一为 `.claude/skills/drafts/solution-expert/SKILL.md`；maintenance.md §2 "6 步" → "4 件事"与 SKILL.md §🔴 对齐；§文件结构 加 .scheme/ 说明；yymmdd 示例 10722→0722；§边界条件/§不同场景/§Code Review Checklist 三处加交叉引用；§完成检查清单 重命名为"作者自检视图"显式指向 §Code Review Checklist |
+| 0.3.16 | references/ 演进条款 + Step 4 流水线补全 + 文档输出规则细化 + 跨 skill 协作补 skill-iter + 边界条件评审模式显式：SKILL.md §🔴 第 1 条扩展 references/*.md 必走 4 件事；§Step 4 加草稿 300 行提示 / subagent 超时阈值 / 草稿大改 30% 回退 / temp 30 天清理（不引入 cron）；§文档输出规则 增并发 `-N` 中段命名 / archive 不带 `-N` / 复盘文档位置示例；§跨 skill 协作 首行加 skill-iter；§边界条件 评审模式显式（避免被误归入"不适用场景"）；maintenance.md §1 + §3 同步 references/ 演进条款 |

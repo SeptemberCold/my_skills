@@ -2,7 +2,7 @@
 name: solution-expert
 description: 方案专家 —— 产出可评审、可落地的实施方案。覆盖新增/修改/优化/重构/移植 5 大场景及方案评审，不直接修改业务代码。本 skill 自身的修改必须遵守 §修改本 skill 的硬性约定。
 metadata:
-  version: 0.3.15
+  version: 0.3.16
   last_updated: 2026-07-22
 ---
 
@@ -13,7 +13,7 @@ metadata:
 > 当用户触发本 skill 时，在执行任何工作流之前，**必须**先在终端打印下面这一行（占位符替换为实际值）：
 >
 > ```
-> 🎯 [solution-expert v0.3.15] 方案专家已启动 | <yyyy-mm-dd>
+> 🎯 [solution-expert v0.3.16] 方案专家已启动 | <yyyy-mm-dd>
 > ```
 >
 > 规范：
@@ -36,7 +36,9 @@ metadata:
 
 > 任何对本文件（`SKILL.md`）的修改**必须**同时完成以下 4 件事，**少一件 = 修改未完成**：
 >
-> 1. **先 `Read references/maintenance.md`** —— 看 §4 修订记录确认当前版本号
+> 1. **先 `Read references/maintenance.md`** —— 看 §4 修订记录确认当前版本号。**若本次改动同时涉及 `references/*.md`**（即 `review-template.md` / `optimize-rules.md` / `maintenance.md`），**同样**要走完本表 4 件事（bump 版本号 + 追加修订记录 + 同步三处版本号 + 双处落盘）—— references/ 与 SKILL.md 共用同一版本号（v0.3.X 递增）
+>    - **触发边界**：任何**非纯空白/换行**修改必触发；纯格式调整（末尾换行 / 标点修正）可不 bump 但要在 `references/maintenance.md §4 修订记录` 标注一行说明
+>    - **最小文字示例**：在 `review-template.md §3` 增加 subagent 超时约定 → bump 0.3.15 → 0.3.16 + §4 追加一行 `"0.3.16 | references/ 演进：xxx"`
 > 2. **改完后追加一行**到 `references/maintenance.md §4 修订记录`（版本号末位 +1 + 一句话累计变更描述）
 > 3. **同步更新版本号三处位置**：
 >    - `frontmatter.metadata.version`
@@ -92,6 +94,8 @@ drafts/solution-expert/
 > 本 skill 同时支持**评审模式**：用户问"评估这个方案"、"这个方案行不行"时，产出**评估清单 + 风险评级 + 改进建议**，而非完整新方案。
 
 ### 边界条件
+
+> ✅ **评审模式适用本 skill**：评审模式是本 skill 的六大场景之一（新增 / 修改 / 优化 / 重构 / 移植 + **评审模式**），详见 §不同场景的侧重点 的"评审（Review）"小节。**不要**被下方"不适用场景"误归——评审模式产出评估清单 + 风险评级 + 改进建议，不走 Step 4 三阶段流水线（详见 §Step 4 何时跳过审核与优化）。
 
 #### 不适用本 skill 的场景
 
@@ -204,6 +208,7 @@ drafts/solution-expert/
 - 按前面 Step 1-3 的产出生成完整方案草稿（沿用标准 8 章模板）
 - 落盘到 **`.scheme/temp/<name>-draft-<yymmdd>.md`**（temp 目录不存在则自动创建）
 - 输出草稿时同步打印一行：`📝 草稿已落盘：.scheme/temp/<name>-draft-<yymmdd>.md`
+- **草稿过大提示**：若草稿超过 ~300 行，建议在 Step 4.2 启动审核 subagent 前提示其"拆段审核"（按 §3.x / §4.x / §5 三个语义段分批喂入），避免单次上下文溢出；不强拆，由编排者按环境判定
 
 #### Step 4.2 · 审核助手（subagent）
 
@@ -214,6 +219,7 @@ drafts/solution-expert/
 - subagent 严格按"审核报告模板"输出，**不改草稿**
 - 落盘审核报告到 **`.scheme/temp/<name>-review-<yymmdd>.md`**
 - subagent 返回空 / 非结构化 → 主 Agent 重试 1 次，仍失败则报告用户并询问是否跳过审核
+- **超时阈值**：subagent 执行超时阈值 = `<N>` 分钟（**占位符**，由编排者按运行环境注入，不在 SKILL.md 中硬编码具体值）；超时后按"返回空 / 非结构化"同一兜底处理
 - 审核结束后打印一行：`🔍 审核报告已落盘：.scheme/temp/<name>-review-<yymmdd>.md`
 
 #### Step 4.3 · 优化助手（subagent）
@@ -225,6 +231,7 @@ drafts/solution-expert/
 - subagent 逐条评估审核建议（**采纳 / 部分采纳 / 不采纳**），不采纳必须给出理由
 - subagent **只采纳审核报告中的建议**，不新增审核没建议的内容（避免范围蔓延）
 - 产出最终方案（含"修改追溯表"附录），落盘到 **`.scheme/<name>-<yymmdd>.md`**
+- **草稿大改回退**：若 subagent 产出与草稿差异 > 30%（按行数比），主 Agent 视为"大改"，应触发草稿回退重审（按草稿原文重新走 Step 4.2-4.3），不直接采用大改结果
 - 优化结束后打印一行：`✅ 最终方案已落盘：.scheme/<name>-<yymmdd>.md`
 
 #### Step 4.4 · 主 Agent 收尾
@@ -232,6 +239,7 @@ drafts/solution-expert/
 - 检查最终方案中的"修改追溯表"是否与审核报告的每条建议**一一对应**（不要求数量相等，但要可追溯）
 - 输出用户摘要（包含 `.scheme/temp/` 与最终方案的路径）
 - 询问用户是否保留 temp 产物（默认保留 30 天可清理）
+- **temp 清理机制**：默认保留 30 天，**不**引入 cron 自动清理——30 天后由编排者在收尾步骤主动提示用户手动清理 `.scheme/temp/`（保留零侵入 + 用户可控）
 - 输出收尾确认行：`🏁 方案流水线完成 | 最终:.scheme/<name>.md | temp:<草稿+审核报告路径>`
 
 #### 何时跳过审核与优化
@@ -274,8 +282,11 @@ drafts/solution-expert/
 - 文件命名规范：
   - 主名以**中文为主、英文为辅**（特有名词如 Room、API 等保留英文）
   - 同一次任务输出多份文档时，在文档名靠末尾加数字区分（如 `智能提醒移植方案-1`、`智能提醒移植方案-2`）
+  - **并发方案命名**：多个不同方案**同时产出**时（如 skill-iter 多轮迭代），在中段加 `-N` 区分（`N` = 轮次），yymmdd 仍在文件最末尾。示例：`.scheme/solution-expert迭代优化方案-2-260722.md`（即第 2 轮 + 7月22日）
   - 文件名最末尾追加 `yymmdd` 日期后缀
   - 最终文件名示例：`智能提醒移植方案-0722.md`、`智能提醒新增功能方案-0722.md`（`yymmdd` = 6 位，07-22 表示 7月22日，避免误读为 10月7日22分）
+  - **archive 子目录命名**：`.scheme/archive/yyyy-mm/<name>-<yymmdd>.md`（归档后的文件名**不带 `-N`**，保持方案名在归档目录中唯一，避免历史追溯歧义）
+  - **复盘文档位置**：`.scheme/<name>-复盘-<yymmdd>.md`，与原方案**同目录**而非 archive/ 下，便于"方案 ↔ 复盘"双向跳转。例：`.scheme/solution-expert迭代优化方案-2-复盘-260722.md`
 - 文件格式：Markdown（`.md`）
 - 落盘后向用户回报路径并给出 5-10 行摘要
 
@@ -334,6 +345,7 @@ drafts/solution-expert/
 
 | Skill | 关系 | 何时联动 |
 |-------|------|---------|
+| skill-iter | 编排 | 对 solution-expert 自身迭代时调用（默认 10 轮）——skill-iter 会按本 skill §文档输出规则 调度本 subagent 出方案，再按本 skill §🔴 硬性约定 实施修改 |
 | code-review | 衔接 | 方案评审通过后用 code-review 审代码 |
 | refactor | 衔接 | 重构类方案实施时切到 refactor |
 | test | 衔接 | 测试要点展开为 test skill 输入 |
