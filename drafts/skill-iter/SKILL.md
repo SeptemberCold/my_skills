@@ -1,8 +1,8 @@
 ---
 name: skill-iter
-description: 自我迭代助手 —— 对指定 SKILL.md 实施多轮迭代优化。每轮调用 solution-expert 从「架构师 + 软件开发者」双视角产出优化方案 → 严格实施 → 版本号末位 +1 → 双处落盘（drafts 工作副本 + .claude/skills/ 部署副本）。整个过程不修改任何业务代码。
+description: 自我迭代助手 —— 对指定 SKILL.md 实施多轮迭代优化。每轮由 solution-expert 走三阶段流水线（草稿 → 审核 → 优化）产出方案并落盘到 .scheme/ → 严格实施 → 版本号末位 +1 → 双处落盘（drafts 工作副本 + .claude/skills/ 部署副本）。整个过程不修改任何业务代码。
 metadata:
-  version: 0.1.0
+  version: 0.1.1
   last_updated: 2026-07-22
 ---
 
@@ -13,7 +13,7 @@ metadata:
 > 当用户触发本 skill 时，在执行任何工作流之前，**必须**先在终端打印下面这一行（占位符替换为实际值）：
 >
 > ```
-> 🎯 [skill-iter v0.1.0] 自我迭代助手已启动 | <yyyy-mm-dd> | 目标:<target_skill_path> | 轮数:<N>
+> 🎯 [skill-iter v0.1.1] 自我迭代助手已启动 | <yyyy-mm-dd> | 目标:<target_skill_path> | 轮数:<N>
 > ```
 >
 > 规范：
@@ -96,7 +96,7 @@ metadata:
 
    ```
    /solution-expert
-   任务：对以下 SKILL.md 做一轮迭代优化方案（只产方案、不动文件）。
+   任务：对以下 SKILL.md 做一轮迭代优化方案。
 
    双视角要求：
    - 架构师视角：模块边界、职责清晰度、与现有 frontmatter 约定的一致性
@@ -104,13 +104,22 @@ metadata:
 
    输入：<当前 SKILL.md 全文>
 
-   输出：一份「最小改动清单」+ 每条改动的影响评估 + 风险与回滚点。
+   落盘要求：按 solution-expert §文档输出规则 走完整三阶段流水线（草稿 → 审核 → 优化），
+            产出最终方案并落盘到 `.scheme/<skill-name>迭代优化方案-<N>-<yymmdd>.md`。
+            <skill-name> 取 target_skill_path 的 frontmatter `name` 字段；<N> = 当前轮次；<yymmdd> = 当天日期。
+            同时保留草稿/审核报告到 `.scheme/temp/`。
+
+   输出：一份「最小改动清单」+ 每条改动的影响评估 + 风险与回滚点（写入最终方案的 §2 / §4 / §5）。
    ```
 
-3. 收到方案后做 3 件事：
+3. **执行方式**：以 general-purpose subagent 形式启动，传入 solution-expert/SKILL.md + references/ 全文作为系统级指引，让 subagent 真正执行 solution-expert 的 Step 4 三阶段流水线并落盘。主线程只做"调用 + 接收结果"，**不替 subagent 写方案**。
+
+4. 收到方案后做 3 件事：
    - **范围裁剪**：若方案越界（如改了和当前轮次无关的章节），砍掉越界部分
-   - **风险标注**：把每条改动按"低/中/高"标注影响
+   - **风险标注**：把每条改动按"低/中/高"标注影响（参考方案中的 §4 / §5）
    - **回滚点**：每条改动必须有可回滚路径（如果只能整文件回滚，明确说）
+
+5. **方案路径登记**：把 `.scheme/<skill-name>迭代优化方案-<N>-<yymmdd>.md` 路径加入本轮的"方案文档"行，下一轮输出时回引上一轮路径。
 
 ### Step 3 · 实施方案
 
@@ -183,7 +192,10 @@ diff <target_skill_path> <deploy_path> && echo "OK: 两处一致"
 ```
 🔁 第 <i>/<N> 轮迭代完成
    版本：<old_version> → <new_version>
-   改动：<条数> 处（详见上方方案）
+   改动：<条数> 处（详见方案文档）
+   方案文档：.scheme/<skill-name>迭代优化方案-<i>-<yymmdd>.md
+     + 草稿：.scheme/temp/<skill-name>迭代优化方案-<i>-draft-<yymmdd>.md
+     + 审核：.scheme/temp/<skill-name>迭代优化方案-<i>-review-<yymmdd>.md
    落盘：
      - 工作副本: <target_skill_path>
      - 部署副本: <deploy_path>
@@ -238,6 +250,11 @@ agent 返回后，把结论应用到本轮 Step 3 / Step 4，**不再二次重�
    起始版本：<v0>
    结束版本：<vN>
    总轮数：<N>
+   方案文档清单：
+     - 第 1 轮：.scheme/<skill-name>迭代优化方案-1-<yymmdd>.md
+     - 第 2 轮：.scheme/<skill-name>迭代优化方案-2-<yymmdd>.md
+     - ...
+     - 第 N 轮：.scheme/<skill-name>迭代优化方案-N-<yymmdd>.md
    每轮改动摘要：<i: 改动条数 / 关键变化>
    落盘一致性：<checked / drift:列点>
    本次未被纳入的方案项（如有）：<list>
@@ -245,16 +262,21 @@ agent 返回后，把结论应用到本轮 Step 3 / Step 4，**不再二次重�
 后续：
    - 如需回滚：git checkout <deploy_path>~N / git revert 后续提交
    - 如需复跑：再次 /skill-iter 即可
+   - 如需审计方案：读取 .scheme/ 下 10 份方案文档
 ```
 
 ---
 
 ## 文档输出规则
 
-- **本 skill 自身**只读，不产出文档
+- **本 skill 自身的 trace 摘要**：保留在主 agent 的滚动回复中（不上盘）——仅用于轮次衔接的回看
 - **被迭代 SKILL.md** 的双处落盘见 Step 5
-- **每轮的"方案 + 改动 + 自检"**记录保留在主 agent 的滚动回复中（不上盘）
-- 如要导出整轮 trace 到文件，由用户主动说"导出到 <path>"再写
+- **每轮的迭代方案**：由 solution-expert subagent 按其 §文档输出规则 落盘到 `.scheme/`：
+  - 草稿：`.scheme/temp/<skill-name>迭代优化方案-<i>-draft-<yymmdd>.md`
+  - 审核报告：`.scheme/temp/<skill-name>迭代优化方案-<i>-review-<yymmdd>.md`
+  - 最终方案：`.scheme/<skill-name>迭代优化方案-<i>-<yymmdd>.md`
+- **本 skill 不替 subagent 写方案**：方案正文必须由 solution-expert subagent 生成并落盘，主线程只编排、不代笔
+- 如要导出整轮 trace（如改动 diff、自检清单）到文件，由用户主动说"导出到 `<path>`"再写
 
 ---
 
@@ -284,6 +306,8 @@ agent 返回后，把结论应用到本轮 Step 3 / Step 4，**不再二次重�
 | 本 skill 自身 | `<repo>/drafts/skill-iter/SKILL.md` （**不进** `.claude/`） |
 | 被迭代目标（默认） | `<repo>/drafts/solution-expert/SKILL.md` |
 | 被迭代目标（部署） | `<repo>/.claude/skills/drafts/solution-expert/SKILL.md` |
+| 每轮方案（solution-expert 落盘） | `<repo>/.scheme/<skill-name>迭代优化方案-<i>-<yymmdd>.md` |
+| 每轮中间产物（solution-expert 落盘） | `<repo>/.scheme/temp/<skill-name>迭代优化方案-<i>-{draft,review}-<yymmdd>.md` |
 | 轮次 trace（可选） | `<repo>/.skill-history/iter-<target_skill_path>-<timestamp>.log` |
 
 > 本 skill 自身的 `.claude/` 部署由用户决定，本次按"**只放 drafts**"约束处理。
