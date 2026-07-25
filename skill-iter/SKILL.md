@@ -1,19 +1,19 @@
 ---
 name: skill-iter
-description: 自我迭代助手 —— 对指定 SKILL.md 实施多轮迭代优化。每轮由 solution-expert 走三阶段流水线（草稿 → 审核 → 优化）产出方案并落盘到 .scheme/ → 严格实施 → 版本号末位 +1 → 双处落盘（drafts 工作副本 + .claude/skills/ 部署副本）。整个过程不修改任何业务代码。
+description: 迭代助手 —— 对指定 SKILL.md 实施多轮迭代优化。每轮由 solution-expert 走三阶段流水线（草稿 → 审核 → 优化）产出方案并落盘到 .scheme/ → 严格实施 → 版本号末位 +1 → 双处落盘（drafts 工作副本 + .claude/skills/ 部署副本）。
 metadata:
-  version: 0.1.1
-  last_updated: 2026-07-22
+  version: 0.1.2
+  last_updated: 2026-07-25
 ---
 
-# 自我迭代助手 Skill
+# 迭代助手 Skill
 
 > 🟢 **Skill 启动确认（每次调用必输出）**
 >
 > 当用户触发本 skill 时，在执行任何工作流之前，**必须**先在终端打印下面这一行（占位符替换为实际值）：
 >
 > ```
-> 🎯 [skill-iter v0.1.1] 自我迭代助手已启动 | <yyyy-mm-dd> | 目标:<target_skill_path> | 轮数:<N>
+> 🎯 [skill-iter v0.1.2] 自我迭代助手已启动 | <yyyy-mm-dd> | 目标:<target_skill_path> | 轮数:<N>
 > ```
 >
 > 规范：
@@ -34,7 +34,24 @@ metadata:
 2. **实施**：严格根据方案做最小且必要的编辑
 3. **版本**：版本号末位 +1，并双处落盘
 
-不修改业务代码、不修改被迭代 skill 之外的任何文件、不擅自改范围。
+不擅自改范围（见 §讨论规则）。修改范围以用户提供的 `scope_hint` 为准，可覆盖 SKILL.md 与 references/，不得越界。
+
+### §用户输入约定
+
+> v0.1.2 起所有字段**必填语义**：除 `user_directives` / `scope_hint` 为可选外，其余字段**不设默认值**。缺字段时主 Agent 必须主动反问，不得静默兜底。
+
+| 字段 | 必填 | 用途 | 缺字段兜底 |
+|------|------|------|----------|
+| `target_skill_path` | 必填 | 被迭代 SKILL.md 路径 | 主 Agent 反问用户确认 |
+| `iterations` | 必填 | 迭代轮数 | 主 Agent 反问用户确认（不默认 10） |
+| `bump_strategy` | 必填 | 版本号递增策略（如 `last_digit+1`） | 主 Agent 反问用户确认（不默认） |
+| `user_directives` | 可选 | 用户本轮特别要求的方向 / 必改项 / 避改项清单 | 回退到自由文本，登记"未提供 directives"到方案 §1.1 |
+| `scope_hint` | 可选 | 用户提示"本轮可改 SKILL.md / references/ / 两者" | 默认仅改 SKILL.md；扩展到 references/ 必须显式声明 |
+
+**`user_directives` 透传机制**：
+- 主线程收到 `user_directives` 后必须**逐条登记**到本轮方案文档的 §1 痛点映射表
+- 方案 subagent 必须**显式回应**每条 directive（采纳 / 部分采纳 / 不采纳 + 理由）
+- 若 `user_directives` 与方案 §3.1 变更清单冲突，主 Agent 必须停下报告用户，**不得静默取舍**
 
 ### 边界条件
 
@@ -69,7 +86,7 @@ metadata:
 - **不复读方案**：实施时**不**在文档里写下"经过本轮迭代改进了 X"等元描述
 - **保留已有规则**：被迭代 skill 自身的"反例/不要做"清单视为硬约束，不得违反
 - **拿不准就讨论**：遇到模糊点启动 subagent；用户已表态"你来决定"则直接采用并标注理由
-- **零侵入业务代码**：本 skill 只读业务代码（用于判断修改影响），不写业务代码
+- **范围以用户输入为准**：用户的 `scope_hint` 决定本轮是否动 SKILL.md / references/；缺 `scope_hint` 时默认仅改 SKILL.md，不静默扩展到 references/
 
 ---
 
@@ -79,14 +96,15 @@ metadata:
 
 ### Step 1 · 准备
 
-1. 接收参数：
-   - `target_skill_path`：被迭代的 SKILL.md 路径（默认 `drafts/solution-expert/SKILL.md`）
-   - `deploy_path`：部署目标，默认 `<repo>/.claude/skills/drafts/solution-expert/SKILL.md`
-     - 即在 `target_skill_path` 的 `drafts/` 段替换为 `.claude/skills/drafts/`
-   - `iterations`：迭代轮数，默认 **10**
-   - `bump_strategy`：版本号递增策略，默认 `last_digit+1`（只动最后一段）
+1. 接收参数（按 §用户输入约定 校验必填）：
+   - `target_skill_path`：被迭代的 SKILL.md 路径（**必填**，不设默认）
+   - `deploy_path`：部署目标，**必填**（不设默认；约定为在 `target_skill_path` 的 `drafts/` 段替换为 `.claude/skills/drafts/`）
+   - `iterations`：迭代轮数（**必填**，不设默认；缺则反问用户）
+   - `bump_strategy`：版本号递增策略（**必填**，不设默认；缺则反问用户）
+   - `user_directives`：用户本轮特别要求的方向（可选；缺则回退自由文本）
+   - `scope_hint`：本轮可改范围（可选；缺则默认仅改 SKILL.md）
 2. 读取 `target_skill_path`，校验 frontmatter 至少有 `name` 与 `description`
-3. 解析当前 `metadata.version`（如缺失则视为 `0.1.0`，并报告给用户）
+3. 解析当前 `metadata.version`（**缺则报告用户**，不得静默假设为 `0.1.0`）
 4. 解析正文中所有出现的版本号（如启动确认行里 `v0.3.10`），建立"版本号出现位置清单"
 
 ### Step 2 · 出方案（每轮 1 次）
@@ -114,12 +132,20 @@ metadata:
 
 3. **执行方式**：以 general-purpose subagent 形式启动，传入 solution-expert/SKILL.md + references/ 全文作为系统级指引，让 subagent 真正执行 solution-expert 的 Step 4 三阶段流水线并落盘。主线程只做"调用 + 接收结果"，**不替 subagent 写方案**。
 
-4. 收到方案后做 3 件事：
+4. **主线程落盘断言（v0.1.2 强化）**：subagent 返回后，主线程**必须**校验以下 3 份产物实际落盘到磁盘：
+   - `.scheme/temp/<name>-draft-<yymmdd>.md` 存在且非空
+   - `.scheme/temp/<name>-review-<yymmdd>.md` 存在且非空
+   - `.scheme/<name>-<yymmdd>.md` 存在且非空
+   - **任一缺失或为空 → 报错并重试 1 次**（相同 subagent prompt + 显式提示产物落盘失败）
+   - 重试仍失败 → 停下报告用户，不自动跳过质量门
+   - **不得**用主线程直接产精简方案覆盖缺失的产物
+
+5. 收到方案后做 3 件事：
    - **范围裁剪**：若方案越界（如改了和当前轮次无关的章节），砍掉越界部分
    - **风险标注**：把每条改动按"低/中/高"标注影响（参考方案中的 §4 / §5）
    - **回滚点**：每条改动必须有可回滚路径（如果只能整文件回滚，明确说）
 
-5. **方案路径登记**：把 `.scheme/<skill-name>迭代优化方案-<N>-<yymmdd>.md` 路径加入本轮的"方案文档"行，下一轮输出时回引上一轮路径。
+6. **方案路径登记**：把 `.scheme/<skill-name>迭代优化方案-<N>-<yymmdd>.md` 路径加入本轮的"方案文档"行，下一轮输出时回引上一轮路径。
 
 ### Step 3 · 实施方案
 
@@ -162,7 +188,7 @@ metadata:
 | 最后一段是 `99` 等两位数 +1 后变 `100` | 正常进位，不补零 |
 | 末段进位后变为两位数（如 `0.3.9 → 0.3.10`） | 保留新位数格式 |
 | 跨过大版本边界（如 `0.3.99 → 0.3.100`） | **本规则不处理**，停下来报告用户 |
-| 完全没有版本号字段 | 在 frontmatter 补 `metadata.version: 0.1.0`，再走一遍 |
+| 完全没有版本号字段 | 报告用户，不得静默补 `0.1.0` |
 
 ### Step 5 · 双处落盘
 
