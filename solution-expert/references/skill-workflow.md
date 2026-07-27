@@ -1,6 +1,22 @@
 # Skill 优化工作流
 
-> 本文件为 `solution-expert` 的 **Skill 优化**处理模块。按需加载，仅在入口分流命中"Skill 优化"路径时由主 Agent Read。
+> 本文件为 `solution-expert` 的 **Skill 优化**处理模块。按需加载，仅在入口分流命中"Skill 优化"或"修改当前 skill"路径时由主 Agent Read。
+
+---
+
+## 🔴 修改本 skill 的硬性约定（不可绕过）
+
+> 当入口分流命中"修改当前 skill"时，本节**必须**执行。少一件 = 修改未完成：
+>
+> 1. **先 `Read references/maintenance.md`** —— 看 §4 修订记录确认当前版本号。**若本次改动同时涉及 `references/*.md`**，**同样**要走完本表 4 件事（bump 版本号 + 追加修订记录 + 同步三处版本号 + 双处落盘）
+> 2. **改完后追加一行**到 `references/maintenance.md §4 修订记录`（版本号末位 +1 + 一句话累计变更描述）
+> 3. **同步更新版本号三处位置**：
+>    - `frontmatter.metadata.version`
+>    - `frontmatter.metadata.last_updated`（同步为当天日期）
+>    - 正文启动确认行 `🎯 [solution-expert vX.Y.Z] ...`
+> 4. **双处落盘（本轮修改文件原子同步）**：工作副本根目录 `solution-expert/` + 部署副本根目录 `.claude/skills/solution-expert/`
+>
+> 📎 skill-iter（自我迭代助手）会自动检查本约定，缺一条会**停下来报告用户**而非默认通过。
 
 ---
 

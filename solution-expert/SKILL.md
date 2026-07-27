@@ -1,8 +1,8 @@
 ---
 name: solution-expert
-description: 方案专家 —— 产出可评审、可落地的实施方案。覆盖新增/修改/优化/重构/移植 + 评审模式 + Skill 优化 七大场景，不直接修改业务代码。本 skill 自身的修改必须遵守 §修改本 skill 的硬性约定。
+description: 方案专家 —— 产出可评审、可落地的实施方案。覆盖新增/修改/优化/重构/移植 + 评审模式 + Skill 优化 七大场景，不直接修改业务代码。
 metadata:
-  version: 0.3.75
+  version: 0.3.76
   last_updated: 2026-07-27
 ---
 
@@ -13,7 +13,7 @@ metadata:
 > 当用户触发本 skill 时，在执行任何工作流之前，**必须**先在终端打印下面这一行（占位符替换为实际值）：
 >
 > ```
-> 🎯 [solution-expert v0.3.75] 方案专家已启动 | <yyyy-mm-dd>
+> 🎯 [solution-expert v0.3.76] 方案专家已启动 | <yyyy-mm-dd>
 > ```
 >
 > 规范：
@@ -24,21 +24,6 @@ metadata:
 
 ---
 
-## 🔴 修改本 skill 的硬性约定（不可绕过）
-
-> 任何对本文件（`SKILL.md`）的修改**必须**同时完成以下 4 件事，**少一件 = 修改未完成**：
->
-> 1. **先 `Read references/maintenance.md`** —— 看 §4 修订记录确认当前版本号。**若本次改动同时涉及 `references/*.md`**，**同样**要走完本表 4 件事（bump 版本号 + 追加修订记录 + 同步三处版本号 + 双处落盘）
-> 2. **改完后追加一行**到 `references/maintenance.md §4 修订记录`（版本号末位 +1 + 一句话累计变更描述）
-> 3. **同步更新版本号三处位置**：
->    - `frontmatter.metadata.version`
->    - `frontmatter.metadata.last_updated`（同步为当天日期）
->    - 正文启动确认行 `🎯 [solution-expert vX.Y.Z] ...`
-> 4. **双处落盘（本轮修改文件原子同步）**：工作副本根目录 `solution-expert/` + 部署副本根目录 `.claude/skills/solution-expert/`
->
-> 📎 skill-iter（自我迭代助手）会自动检查本约定，缺一条会**停下来报告用户**而非默认通过。
-
----
 
 ## 📂 文件结构
 
@@ -86,7 +71,7 @@ solution-expert/
 
 | 路径 | 命中条件 | 执行 | 产物 |
 |------|---------|------|------|
-| **修改当前 skill** | 用户说"对 solution-expert 出优化方案" / "solution-expert 需要 X" | 走 skill-iter 编排；Read `references/maintenance.md` | 优化方案 + 实施 |
+| **修改当前 skill** | 用户说"对 solution-expert 出优化方案" / "solution-expert 需要 X" | Read `references/skill-workflow.md`（含 🔴 硬性约定）并执行 | 优化方案 + 实施 |
 | **输出 Skill 类方案** | 用户说"对 X skill 出优化方案"（X ≠ solution-expert） | Read `references/skill-workflow.md` 并按其工作流执行 | 8 章方案 + 三阶段产物 |
 | **输出项目代码类方案** | 用户说"做 X 功能的方案" / "X 模块需要重构" 等业务系统场景 | Read `references/project-workflow.md` 并按其工作流执行 | 标准 8 章 + 三阶段产物 |
 

@@ -138,3 +138,4 @@
 | 0.3.73 | 主 SKILL.md 拆分为 Shell + 入口路由；新增 references/project-workflow.md（项目方案工作流）与 references/skill-workflow.md（Skill 优化工作流）；按需加载原则落地：入口分流命中后 Read 对应 workflow 文件；maintenance.md §3 同步 references/ 演进条款 |
 | 0.3.74 | 角色定位 新增铁律：solution-expert 只输出方案不执行任何修改操作；禁止 Edit/Write/Bash 等工具修改任何文件；落盘例外仅限 .scheme/ 交付物；执行权归 implementation-assistant |
 | 0.3.75 | SKILL.md 入口 5 条→3 条（修改当前 skill / 输出 Skill 类方案 / 输出项目代码类方案）；SKILL.md 266 行→119 行精简；质量准则/检查清单/多轮对话/停止提问迁入 references/；新增 quality-guidelines.md + multi-round-dialog.md；评审/精简降级为 project-workflow 内部子路径 |
+| 0.3.76 | 🔴 修改本 skill 的硬性约定 从 SKILL.md 主入口移至 skill-workflow.md（仅在"修改当前 skill"路径执行时加载）；frontmatter description 同步精简 |
