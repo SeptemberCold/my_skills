@@ -38,7 +38,6 @@ metadata:
    - `frontmatter.metadata.version`
    - `frontmatter.metadata.last_updated`（同步为当天日期）
    - 正文启动确认行 `🎯 [implementation-assistant vX.Y.Z] ...`
-4. **双处落盘（本轮修改文件原子同步）**：工作副本根目录 `implementation-assistant/` + 部署副本根目录 `.claude/skills/implementation-assistant/`
 
 ---
 
