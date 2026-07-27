@@ -135,3 +135,5 @@
 | 0.3.70 | §6 测试要点 单元测试 行后新增 1 行"覆盖率门槛"子条目（覆盖率门槛 ≥ X%/Y%；X%/Y% 由实施者按项目实际阈值填入，不在本方案锁定），与 Round 1 §Code Review Checklist NFR "测试可达性" + Round 7 §1 NFR 量化 表"可测试性"档 + §完成检查清单 `[HARD] 覆盖率达标` 口径形成"评审检查 → NFR 量化 → 实施指引"三层闭环；§4 修订记录追加 1 行；同步三处版本号；双处落盘 |
 | 0.3.71 | §启动确认行"例外"段加 1 条"用户跨 session 续接"场景（与同 session 内 follow-up 互补：前者需先 Read .scheme/ 下对应方案路径判定续接，后者直接进入下一轮），覆盖跨 session 任务接续场景的启动确认决策；§4 修订记录追加 1 行；同步三处版本号；双处落盘 |
 | 0.3.72 | §Step 4 何时跳过审核与优化 表"理由"列对 5 行各加 1 个具体场景示例（5 行 × 2 行/行 = 10 行；完整方案路径 + 评审模式 + 精简路径 + Bug 修复 + 显式 opt-out 5 例）；§4 修订记录追加 1 行；同步三处版本号；双处落盘 |
+| 0.3.73 | 主 SKILL.md 拆分为 Shell + 入口路由；新增 references/project-workflow.md（项目方案工作流）与 references/skill-workflow.md（Skill 优化工作流）；按需加载原则落地：入口分流命中后 Read 对应 workflow 文件；maintenance.md §3 同步 references/ 演进条款 |
+| 0.3.74 | 角色定位 新增铁律：solution-expert 只输出方案不执行任何修改操作；禁止 Edit/Write/Bash 等工具修改任何文件；落盘例外仅限 .scheme/ 交付物；执行权归 implementation-assistant |
